@@ -64,7 +64,15 @@ class _EstoqueMPviewState extends State<EstoqueMPview> {
   }
 
   Future<void> scanBarcode() async {
-    String barcodeScanRes;
+    String barcodeScanRes = "11";
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DarBaixaMP(codigoBarras: barcodeScanRes),
+      ),
+    ).then((_) => _fetchEstoque());
+    /*
     try {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
           "#ff6666", "Cancel", true, ScanMode.BARCODE);
@@ -81,7 +89,7 @@ class _EstoqueMPviewState extends State<EstoqueMPview> {
     } catch (e) {
       print('Erro ao escanear código de barras: $e');
       barcodeScanRes = 'Falha ao escanear';
-    }
+    }*/
   }
 
   @override
@@ -193,7 +201,11 @@ class _EstoqueMPviewState extends State<EstoqueMPview> {
           FloatingActionButton(
             backgroundColor: Color(0xFF118383),
             onPressed: scanBarcode,
-            child: Icon(Icons.filter_list, color: Color(0xFFEBEBEB)),
+            child: Image.asset(
+              'assets/icons/barcode_scan.png',
+              width: 24,
+              height: 24,
+            ),
             heroTag: null,
           ),
         ],

@@ -8,7 +8,7 @@ class EstoqueMP {
   final int? id;
   final MateriaPrima? materiaPrima;
   final DateTime validade;
-  late final double quantidade;
+  double quantidade;
   final int quantidadeUnidade;
   final double totalUnidadeUtilizada;
   final double valor;

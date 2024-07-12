@@ -17,7 +17,10 @@ class EstoqueProdutoView extends StatefulWidget {
 
 class _EstoqueProdutoViewState extends State<EstoqueProdutoView> {
   final ProdutoService _produtoService = ProdutoService();
+  final TextEditingController _searchController = TextEditingController();
   late Future<List<EstoqueProduto>> _estoqueFuture;
+  List<EstoqueProduto> _estoqueList = [];
+  List<EstoqueProduto> _filteredEstoqueList = [];
 
   void _handleAdicionarProduto() {
     Navigator.push(
@@ -37,8 +40,29 @@ class _EstoqueProdutoViewState extends State<EstoqueProdutoView> {
   void _fetchEstoque() {
     setState(() {
       _estoqueFuture = _produtoService.getEstoqueProduto();
+      _estoqueFuture.then((estoqueList) {
+        setState(() {
+          _estoqueList = estoqueList;
+          _filteredEstoqueList = estoqueList;
+        });
+      }).catchError((error) {
+        print('Erro ao buscar estoque: $error');
+      });
     });
+  }
 
+  void _filterEstoque(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        _filteredEstoqueList = _estoqueList;
+      });
+    } else {
+      setState(() {
+        _filteredEstoqueList = _estoqueList.where((item) {
+          return item.produto?.nome.toLowerCase().contains(query.toLowerCase()) ?? false;
+        }).toList();
+      });
+    }
   }
 
   Future<void> scanBarcode() async {
@@ -76,6 +100,18 @@ class _EstoqueProdutoViewState extends State<EstoqueProdutoView> {
         padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
+            TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                labelText: 'Buscar',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
+              onChanged: _filterEstoque,
+            ),
+            SizedBox(height: 10),
             Expanded(
               child: FutureBuilder<List<EstoqueProduto>>(
                 future: _estoqueFuture,
@@ -89,9 +125,9 @@ class _EstoqueProdutoViewState extends State<EstoqueProdutoView> {
                   }
 
                   return ListView.builder(
-                    itemCount: snapshot.data!.length,
+                    itemCount: _filteredEstoqueList.length,
                     itemBuilder: (context, index) {
-                      final item = snapshot.data![index];
+                      final item = _filteredEstoqueList[index];
                       return Card(
                         color: Color(0xFFED9F5F),
                         margin: const EdgeInsets.symmetric(vertical: 5),
@@ -150,7 +186,11 @@ class _EstoqueProdutoViewState extends State<EstoqueProdutoView> {
             onPressed: () async {
               await scanBarcode();
             },
-            child: Icon(Icons.filter_list, color: Color(0xFFEBEBEB)),
+            child: Image.asset(
+              'assets/icons/barcode_scan.png',
+              width: 24,
+              height: 24,
+            ),
             heroTag: null,
           ),
         ],
