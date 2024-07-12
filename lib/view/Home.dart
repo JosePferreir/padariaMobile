@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:padaria_mobile/view/Compras.dart';
+import 'package:padaria_mobile/view/Compras/Compras.dart';
 import 'package:padaria_mobile/view/Produtos/EstoqueProdutos.dart';
 
+import '../Services/AuthService.dart';
+import 'Login.dart';
 import 'MP/EstoqueMP.dart';
 
 class Home extends StatefulWidget {
@@ -12,17 +14,39 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-
-  String _resultado = "";
+  final AuthService _authService = AuthService();
   int _indiceAtual = 0;
+
+  Future<void> _logout() async {
+    await _authService.logout();
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => Login(onLoginSuccess: _checkAuthentication)),
+          (route) => false,
+    );
+  }
+
+  Future<void> _checkAuthentication() async {
+    String? token = await _authService.getToken();
+    if (mounted) {
+      setState(() {
+        _indiceAtual = token != null ? _indiceAtual : 0;
+      });
+    }
+  }
+
+  void handleLogout() {
+    _logout();
+  }
 
   @override
   Widget build(BuildContext context) {
+    print('Home - buildou');
 
     List<Widget> telas = [
-      EstoqueMP(),
-      EstoqueProduto(),
-      Compras(),
+      EstoqueMPview(onLogout: handleLogout),
+      EstoqueProdutoView(onLogout: handleLogout),
+      Compras(onLogout: handleLogout),
     ];
 
     return Scaffold(

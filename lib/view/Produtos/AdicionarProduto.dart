@@ -4,13 +4,39 @@ import 'CompraProduto.dart';
 import 'FabricacaoProduto.dart';
 
 class AdicionarProduto extends StatefulWidget {
-  const AdicionarProduto({super.key});
+  final VoidCallback onProdutoAdicionado;
+
+  const AdicionarProduto({super.key, required this.onProdutoAdicionado});
 
   @override
   State<AdicionarProduto> createState() => _AdicionarProdutoState();
 }
 
 class _AdicionarProdutoState extends State<AdicionarProduto> {
+  void _handleFabricacao() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FabricacaoProduto(onFabricacaoSuccess: () {
+          widget.onProdutoAdicionado();
+          Navigator.pop(context);
+        }),
+      ),
+    );
+  }
+
+  void _handleCompra() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CompraProduto(onCompraSuccess: () {
+          widget.onProdutoAdicionado();
+          Navigator.pop(context);
+        }),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,15 +49,7 @@ class _AdicionarProdutoState extends State<AdicionarProduto> {
         child: Column(
           children: [
             GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CompraProduto(),
-                  ),
-                );
-
-              },
+              onTap: _handleCompra,
               child: Card(
                 color: Color(0xFFED9F5F), // Fundo laranja claro
                 shape: RoundedRectangleBorder(
@@ -54,14 +72,7 @@ class _AdicionarProdutoState extends State<AdicionarProduto> {
             ),
             SizedBox(height: 20),
             GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FabricacaoProduto(),
-                  ),
-                );
-              },
+              onTap: _handleFabricacao,
               child: Card(
                 color: Color(0xFFED9F5F), // Fundo laranja claro
                 shape: RoundedRectangleBorder(

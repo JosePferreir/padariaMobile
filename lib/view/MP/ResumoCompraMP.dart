@@ -1,13 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:padaria_mobile/model/MP/EstoqueMP.dart';
+import 'package:padaria_mobile/view/MP/EstoqueMP.dart';
+
+import '../../services/MateriaPrimaService.dart';
+import '../Home.dart';
 
 class ResumoCompraMP extends StatefulWidget {
-  const ResumoCompraMP({super.key});
+  final List<EstoqueMP> compraList;
+
+  const ResumoCompraMP({super.key, required this.compraList});
 
   @override
   State<ResumoCompraMP> createState() => _ResumoCompraMPState();
 }
 
 class _ResumoCompraMPState extends State<ResumoCompraMP> {
+  final MateriaPrimaService _materiaPrimaService = MateriaPrimaService();
+
+  void _confirmarCompra() async {
+    try {
+      await _materiaPrimaService.saveEstoqueMP(widget.compraList);
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => Home()),
+            (Route<dynamic> route) => false,
+      );
+    } catch (error) {
+      print('Erro ao confirmar compra: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao confirmar compra')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,26 +46,29 @@ class _ResumoCompraMPState extends State<ResumoCompraMP> {
           children: [
             Expanded(
               child: ListView.builder(
-                itemCount: 5, // Número fictício de itens
+                itemCount: widget.compraList.length,
                 itemBuilder: (context, index) {
+                  final item = widget.compraList[index];
                   return Card(
                     color: Color(0xFF9AD0D0),
                     margin: const EdgeInsets.symmetric(vertical: 5),
                     child: ListTile(
-                      title: Text('Farinha'),
+                      title: Text(item.materiaPrima?.descricao ?? 'Sem descrição'),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('N° itens: 50  Uni:Kg'),
-                          Text('Qtd/item:5'),
-                          Text('Validade:05/05/2023  Valor:R\$13,00'),
+                          Text('N° itens: ${item.quantidade}  Uni:${item.materiaPrima?.unidadeUtilizada ?? 'Kg'}'),
+                          Text('Qtd/item: ${item.quantidadeUnidade}'),
+                          Text('Validade: ${item.validade.toLocal().toString().split(' ')[0]}  Valor: R\$${item.valor}'),
                         ],
                       ),
                       trailing: FloatingActionButton(
                         backgroundColor: Color(0xFFEBEBEB),
                         mini: true,
                         onPressed: () {
-                          // Função para remover item
+                          setState(() {
+                            widget.compraList.removeAt(index);
+                          });
                         },
                         child: Icon(
                           Icons.cancel_outlined,
@@ -71,9 +99,7 @@ class _ResumoCompraMPState extends State<ResumoCompraMP> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                   ),
-                  onPressed: () {
-                    // Função para confirmar
-                  },
+                  onPressed: _confirmarCompra,
                   child: Text('Confirmar', style: TextStyle(color: Colors.white)),
                 ),
               ],
